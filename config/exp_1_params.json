@@ -1,0 +1,95 @@
+{
+  "_comment": "Parameters for exp_1_separate_fees_lvr. All values referenced from paper equations.",
+  "experiment_id": "exp_1_separate_fees_lvr",
+  "title": "Verification of Zero LVR for Separate Fee Mechanisms (Uniswap v3 Type)",
+  "paper_reference": "Loss-versus-rebalancing with external proportional transaction costs",
+
+  "pool": {
+    "k": 1.0,
+    "_k_note": "Geometric-mean exponent. k=1 is the constant-product (Uniswap v2) reserve curve. Paper eq (17).",
+    "C": 1.0,
+    "_C_note": "Initial reserve curve level: Y = C * X^(-k). Paper Section 2.1.1.",
+    "tau": 0.003,
+    "_tau_note": "Pool fee fraction (0.3%). Paper eq (1). tau+lambda>0 required by Theorem 3.2.",
+    "tau_zero": 0.0,
+    "_tau_zero_note": "Zero pool fee scenario to verify zero-LVR still holds when lambda>0."
+  },
+
+  "external_market": {
+    "lambda": 0.001,
+    "_lambda_note": "Proportional external transaction cost parameter. Paper eq (1). lambda in [0,1).",
+    "lambda_zero": 0.0,
+    "_lambda_zero_note": "Zero external cost scenario (used when tau>0)."
+  },
+
+  "simulation": {
+    "S0": 1.0,
+    "_S0_note": "Initial external reference price S*_0.",
+    "X0": 1.0,
+    "_X0_note": "Initial active risky reserve.",
+    "T": 1.0,
+    "_T_note": "Simulation horizon in years.",
+    "N_steps": 50000,
+    "_N_steps_note": "Number of discrete time steps (fine grid approximates continuous dynamics).",
+    "dt": 2e-5,
+    "_dt_note": "Time step = T/N_steps.",
+    "mu": 0.0,
+    "_mu_note": "Drift of external price GBM (risk-neutral for verification).",
+    "sigma": 0.5,
+    "_sigma_note": "Volatility of external price GBM.",
+    "random_seed": 42,
+    "_random_seed_note": "Reproducibility seed.",
+    "deterministic_scenarios": [
+      {
+        "name": "monotone_up",
+        "_note": "Monotone increasing price path. LVR must remain 0."
+      },
+      {
+        "name": "monotone_down",
+        "_note": "Monotone decreasing price path. LVR must remain 0."
+      },
+      {
+        "name": "oscillating",
+        "_note": "Oscillating price path crossing both boundaries multiple times."
+      },
+      {
+        "name": "gbm_stochastic",
+        "_note": "GBM path. Tests zero-LVR for random continuous paths."
+      }
+    ]
+  },
+
+  "parameter_scenarios": [
+    {
+      "name": "base_case",
+      "tau": 0.003,
+      "lambda": 0.001,
+      "_note": "Both fees positive. tau+lambda>0 confirmed. Paper Theorem 3.2."
+    },
+    {
+      "name": "zero_pool_fee_positive_spread",
+      "tau": 0.0,
+      "lambda": 0.005,
+      "_note": "No pool fee, positive external spread. Paper: 'A positive external spread alone suffices'."
+    },
+    {
+      "name": "positive_pool_fee_zero_spread",
+      "tau": 0.005,
+      "lambda": 0.0,
+      "_note": "Positive pool fee, no external spread. Standard AMM zero-LVR case."
+    },
+    {
+      "name": "both_positive_large",
+      "tau": 0.01,
+      "lambda": 0.005,
+      "_note": "Larger fees for stress testing the zero-LVR result."
+    }
+  ],
+
+  "acceptance_criteria": {
+    "max_abs_lvr_ratio": 1e-6,
+    "_note": "Max |LVR_tc| / |V_LP| at any step. Should be ~0 (numerical precision only).",
+    "max_terminal_lvr": 1e-10,
+    "_note": "Max absolute LVR at terminal time T."
+  }
+}
